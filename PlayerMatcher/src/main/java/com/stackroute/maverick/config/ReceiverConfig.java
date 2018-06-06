@@ -1,7 +1,9 @@
 package com.stackroute.maverick.config;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -107,6 +109,27 @@ public class ReceiverConfig {
 
 		return factory;
 	}
+	
+	
+	@Bean
+	public ConsumerFactory<String, Map<Integer,Set<Integer>>> consumerFactory2() {
+		return new DefaultKafkaConsumerFactory<>(consumerConfigs());
+	}
+
+	/**
+	 * The kafkaListenerContainerFactory is responsible to create the listener
+	 * container for a particular end point.
+	 * 
+	 * @return Kafka containers created by this condition.
+	 */
+	@Bean
+	public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, Map<Integer,Set<Integer>>>> kafkaListenerContainerFactory2() {
+		ConcurrentKafkaListenerContainerFactory<String, Map<Integer,Set<Integer>>> factory = new ConcurrentKafkaListenerContainerFactory<>();
+		factory.setConsumerFactory(consumerFactory2());
+
+		return factory;
+	}
+	
 	
 	
 	// Version 1.0

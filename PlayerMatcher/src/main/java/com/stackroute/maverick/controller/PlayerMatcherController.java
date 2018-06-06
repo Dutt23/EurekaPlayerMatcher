@@ -1,17 +1,17 @@
 package com.stackroute.maverick.controller;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-
-import org.springframework.stereotype.Controller;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import com.stackroute.maverick.domain.User;
 import com.stackroute.maverick.service.AddPlayerService;
-import com.stackroute.maverick.service.FileWriterReaderService;
 
 /**
  * Kafka Listener Controller class
@@ -19,8 +19,9 @@ import com.stackroute.maverick.service.FileWriterReaderService;
  * @author shatayki
  *
  */
-
-@Controller
+@CrossOrigin("*")
+@RestController
+@RequestMapping("api/v1")
 public class PlayerMatcherController {
 	/**
 	 * Method to avoid bean error. As the domain isn't being stored in the database.
@@ -43,8 +44,6 @@ public class PlayerMatcherController {
 	 */
 	@Autowired
 	AddPlayerService addPlayerService;
-	@Autowired
-	FileWriterReaderService fileWriterReaderService;
 
 	/**
 	 * 
@@ -57,24 +56,16 @@ public class PlayerMatcherController {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public void addPlayertoFastestFingerQueue(int gameId, int userId)
+	@RequestMapping(value = "/matching/{userId}/{gameId}", method = RequestMethod.GET)
+	public ResponseEntity<String> addPlayertoFastestFingerQueue(@PathVariable(value = "userId") int userId,
+			@PathVariable(value = "gameId") int gameId)
 			throws InterruptedException, ClassNotFoundException, IOException {
 
-		Map<Integer, Set<Integer>> gameQueue;
-		// This is where the gameId will be stored
+		System.out.println("Hit" + gameId + userId);
+
 		addPlayerService.addPlayertoQueue(gameId, userId);
 
-		// for (int key : gameQueue.keySet()) {
-		//
-		// Set<Integer> players = gameQueue.get(key);
-		// // Condition to make sure one player is not returned
-		// if (players.size() >= 2 || players.size() <= 4 && players.size() != 1) {
-		//
-		//
-		//
-		// }
-		//
-		// }
+		return new ResponseEntity<String>("Matched", HttpStatus.OK);
 
 	}
 

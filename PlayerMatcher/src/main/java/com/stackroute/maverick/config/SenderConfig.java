@@ -1,7 +1,10 @@
 package com.stackroute.maverick.config;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 
@@ -55,7 +58,7 @@ public class SenderConfig {
 	 * @return
 	 */
 	@Bean
-	public ProducerFactory<String, String> producerFactory() {
+	public ProducerFactory<String, Integer> producerFactory() {
 		return new DefaultKafkaProducerFactory<>(producerConfigs());
 	}
 
@@ -64,7 +67,7 @@ public class SenderConfig {
 	 * @return
 	 */
 	@Bean
-	public KafkaTemplate<String, String> kafkaTemplate() {
+	public KafkaTemplate<String, Integer> kafkaTemplate() {
 		return new KafkaTemplate<>(producerFactory());
 	}
 
@@ -84,6 +87,20 @@ public class SenderConfig {
 	@Bean
 	public KafkaTemplate<String, Object> kafkaTemplate1() {
 		return new KafkaTemplate<>(producerFactory1());
+	}
+	
+	@Bean
+	public ProducerFactory<String, Map<Integer,Set<Integer>>> producerFactory2() {
+		return new DefaultKafkaProducerFactory<>(producerConfigs());
+	}
+
+	/**
+	 * Configuring the kafka template to send Objects
+	 * @return
+	 */
+	@Bean
+	public KafkaTemplate<String, Map<Integer,Set<Integer>>> kafkaTemplate2() {
+		return new KafkaTemplate<>(producerFactory2());
 	}
 	
 //	@Bean

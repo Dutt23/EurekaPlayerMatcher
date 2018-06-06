@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -33,6 +33,9 @@ public class AddPlayerServiceImpl implements AddPlayerService {
 	public static Timer timer = new Timer();
 	public static int gameId;
 
+	@Autowired
+	KafkaProducerServiceImpl kafkaProducerServiceImpl;
+
 	// int k = 0;
 
 	/**
@@ -43,7 +46,8 @@ public class AddPlayerServiceImpl implements AddPlayerService {
 	public void addPlayertoQueue(int gameId, int userId) throws InterruptedException {
 
 		// Set<Integer> playerSet = new HashSet<Integer>();
-		// Map<Integer, Set<Integer>> gameQueue = new HashMap<Integer, Set<Integer>>();
+		// Map<Integer, Set<Integer>> gameQueue = new HashMap<Integer,
+		// Set<Integer>>();
 		// gameQueue.put(gameId, playerSet);
 
 		// Set<Integer> playerSet1 = new HashSet<Integer>();
@@ -59,6 +63,7 @@ public class AddPlayerServiceImpl implements AddPlayerService {
 		// while (playerSet.size() <= 4) {
 
 		// This loop is entered when the first player is added.
+
 		AddPlayerServiceImpl.gameId = gameId;
 
 		if (playerSet.isEmpty()) {
@@ -66,7 +71,7 @@ public class AddPlayerServiceImpl implements AddPlayerService {
 			playerSet.add(userId);
 			gameQueue.put(gameId, playerSet);
 			timer = new Timer();
-			timer.schedule(new RemindTask(), 5000);
+			timer.schedule(new RemindTask(), 10000);
 			System.out.println("This if if" + playerSet);
 		}
 		// Entered when this is not the first player being added
@@ -80,20 +85,10 @@ public class AddPlayerServiceImpl implements AddPlayerService {
 
 				// Checking for duplicates
 
-				if (key == userId) {
+				playerSet.add(userId);
+				gameQueue.put(gameId, playerSet);
 
-					System.out.println("Already exists");
-
-				}
-
-				else {
-
-					playerSet.add(userId);
-					gameQueue.put(gameId, playerSet);
-
-					timer.schedule(new RemindTask(), 5000);
-
-				}
+				timer.schedule(new RemindTask(), 10000);
 
 			}
 			System.out.println("Final map" + gameQueue);
@@ -102,6 +97,7 @@ public class AddPlayerServiceImpl implements AddPlayerService {
 		// When max game queue size has been reached
 		if (playerSet.size() == 4) {
 			System.out.println("Greater than 4, safe to send");
+			kafkaProducerServiceImpl.sendFastestFingerPlayerList1("test.t", gameQueue);
 			gameQueue.remove(gameId);
 			playerSet.clear();
 			timer.cancel();
@@ -125,11 +121,20 @@ public class AddPlayerServiceImpl implements AddPlayerService {
 		 *
 		 */
 		public void run() {
-			System.out.println("Time's up! List sent");
-			
-			gameQueue.remove(gameId);
-			playerSet.clear();
-			timer.cancel(); // Terminate the timer thread
+
+			if (playerSet.size() < 2) {
+				gameQueue.remove(gameId);
+				playerSet.clear();
+				System.out.println("Only one player");
+			}
+
+			else {
+				System.out.println("Time's up! List sent");
+//				kafkaProducerServiceImpl.sendFastestFingerPlayerList1("test.t", gameQueue);
+				gameQueue.remove(gameId);
+				playerSet.clear();
+				timer.cancel(); // Terminate the timer thread
+			}
 		}
 
 	}
